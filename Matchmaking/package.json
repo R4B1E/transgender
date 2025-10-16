@@ -11,8 +11,8 @@
     "prisma:migrate": "npx prisma migrate dev --name init",
     "prisma:reset": "npx prisma migrate reset",
     "db:push": "npx prisma db push",
-    "build": "rimraf dist && tsc && cp src/schemas/*.json dist/schemas/",
-    "dev": "tsx watch src/app.ts"
+    "build": "npm run prisma:migrate && rimraf dist && tsc && cp src/schemas/*.json dist/schemas/",
+    "dev": "npm run prisma:migrate && tsx watch src/app.ts"
   },
   "keywords": [],
   "author": "",
@@ -32,7 +32,8 @@
     "fastify-tsconfig": "^3.0.0",
     "prisma": "^6.16.0",
     "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }

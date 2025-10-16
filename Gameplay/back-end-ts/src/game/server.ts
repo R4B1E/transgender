@@ -1,5 +1,6 @@
 import { Worker, isMainThread, threadId } from "worker_threads";
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
+import Realtime from "../realtime-client/app";
 import path from "path";
 
 interface GameRoom {
@@ -55,7 +56,7 @@ function generateNewGameThread(
 
 const PongServerPlugin: FastifyPluginAsync = async function (fastify: FastifyInstance) {
     let activeGameRooms: Map<string, GameRoom> = new Map();
-    let realtime = fastify.realtime;
+    let realtime = Realtime('ws://localhost:8080', {reconnect: true});
         realtime.subscribe('PongGame', (message : any) => {
             if (activeGameRooms.get(message.roomCode) === undefined)
                 generateNewGameThread(

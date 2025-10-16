@@ -34,7 +34,7 @@ async function main() {
     cascadeHooks: true,
   })
 
-  // await fastify.register(PongServerPlugin);
+  await fastify.register(PongServerPlugin);
 
   fastify.ready().then(() => {
     fastify.log.info('app ready .');

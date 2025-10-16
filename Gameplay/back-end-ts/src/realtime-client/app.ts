@@ -1,5 +1,5 @@
 type Channel = string;
-type PubData = any; // refine later to concrete shapes
+type PubData = any;
 type EventType = 'subscribe' | 'unsubscribe' | 'publish' | 'ping';
 
 interface PubSubEvent {

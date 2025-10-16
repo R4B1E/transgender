@@ -1,0 +1,23 @@
+services:
+  matchmaking:
+    build:
+      context: Matchmaking
+      dockerfile: Dockerfile
+    ports:
+      - "3042:3000"
+    volumes:
+    - data:/data/db
+  gameplay:
+    build:
+      context: Gameplay/back-end
+      dockerfile: Dockerfile
+    ports:
+      - "3043:3001"
+  realtime:
+    build:
+      context: Realtime
+      dockerfile: Dockerfile
+    ports:
+      - "3044:3002"
+volumes:
+  data:

@@ -68,4 +68,6 @@ generated
 
 # ignore Dockerfile for now to be refactored later
 Dockerfile
-prisma
+prisma/migrations
+prisma/dev.db
+.env

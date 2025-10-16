@@ -1,0 +1,11 @@
+node_modules
+prisma/dev.db
+prisma/migrations
+generated
+.git
+.dockerignore
+README.md
+plan.md
+dev.Dockerfile
+prod.Dockerfile
+dist
