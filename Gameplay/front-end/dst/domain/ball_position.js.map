@@ -1,1 +1,0 @@
-{"version":3,"file":"ball_position.js","sourceRoot":"","sources":["../../src/domain/ball_position.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,OAAO,OAAO,YAAY;IAC7B,CAAC,CAAS;IACV,CAAC,CAAS;IACV,YAAY,CAAU,EAAE,CAAU;QAE9B,IAAI,CAAC,CAAC,GAAG,CAAC,CAAC;QACX,IAAI,CAAC,CAAC,GAAG,CAAC,CAAC;IACf,CAAC;CACJ"}

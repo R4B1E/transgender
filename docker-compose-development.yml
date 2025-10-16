@@ -1,0 +1,37 @@
+services:
+  matchmaking:
+    container_name: matchmaking
+    build:
+      context: Matchmaking
+      dockerfile: dev.Dockerfile
+    ports:
+      - "${MATCHMAKING_HOST_PORT}:${MATCHMAKING_CONTAINER_PORT}"
+    depends_on:
+      - realtime
+    networks:
+      - localnet
+    restart: always
+  gameplay:
+    container_name: gameplay
+    build:
+      context: Gameplay
+      dockerfile: dev.Dockerfile
+    ports:
+      - "${GAMEPLAY_HOST_PORT}:${GAMEPLAY_CONTAINER_PORT}"
+    depends_on:
+      - matchmaking
+    networks:
+      - localnet
+    restart: always
+  realtime:
+    container_name: realtime
+    build:
+      context: Realtime
+      dockerfile: dev.Dockerfile
+    ports:
+      - "${REALTIME_HOST_PORT}:${REALTIME_CONTAINER_PORT}"
+    networks:
+      - localnet
+    restart: always
+networks:
+  localnet:

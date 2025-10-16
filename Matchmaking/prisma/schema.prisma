@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  id           Int       @id @default(autoincrement())
+  createdAt    DateTime  @default(now())
+  endedAt      DateTime?
+  rooms        Room[]            
+  type         String
+  Winner        String?
+}
+
+model Room {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  endedAt   DateTime?
+  players   Player[]
+  game      Game     @relation(fields: [gameId], references: [id])
+  gameId    Int
+  Winner    String?
+  Host      String?
+}
+
+model Player {
+  id        String      @id
+  room      Room     @relation(fields: [roomId], references: [id])
+  roomId    Int
+  // add other fields (name, score, etc.) as needed
+}
+
+// enum Mode {
+//   TOURNAMENT
+//   MULTIPLAYER
+// }

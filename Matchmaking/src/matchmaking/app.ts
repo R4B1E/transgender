@@ -4,7 +4,7 @@ import type { Game, /*Room,*/ Prisma, Room } from "../../generated/prisma";
 
 const Matchmaking: FastifyPluginAsync = async function (fastify: FastifyInstance, opts) {
     const Modes: Map<string, number> = new Map([["Tournament", 8], ["Multiplayer", 2]]);
-    const realtime = Realtime('ws://localhost:8080', { reconnect: true });
+    const realtime = Realtime('ws://realtime:' + fastify.config.REALTIME_PORT.toString(), { reconnect: true });
     let PlayerPerRoom: Map<string, Room> = new Map();
     let PlayersinRoom : Prisma.PlayerCreateInput[] | undefined = undefined;
 

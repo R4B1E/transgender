@@ -7,8 +7,11 @@
             "default": "development"
         },
         "PORT": {
-            "type": "integer",
-            "default": 3000
+            "type": "integer"
+        },
+        "REALTIME_PORT": {
+            "type": "integer"
         }
-    }
+    },
+    "required": ["PORT", "REALTIME_PORT"]
 }

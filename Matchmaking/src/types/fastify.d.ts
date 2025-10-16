@@ -10,7 +10,8 @@ declare module 'fastify' {
     config: { // this should be the same as the confKey in options
       // specify your typing here
       PORT: number,
-      NODE_ENV: string
+      NODE_ENV: string,
+      REALTIME_PORT: number
     };
   }
 }
