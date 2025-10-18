@@ -1,0 +1,4 @@
+node_modules
+dst/*
+!dst/index.html
+.vscode

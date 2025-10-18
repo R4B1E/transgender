@@ -1,0 +1,17 @@
+{
+    "type": "object",
+    "$id": "schema:dotenv",
+    "properties": {
+        "NODE_ENV": {
+            "type": "string",
+            "default": "development"
+        },
+        "PORT": {
+            "type": "integer"
+        },
+        "REALTIME_PORT": {
+            "type": "integer"
+        }
+    },
+    "required": ["PORT", "REALTIME_PORT"]
+}
