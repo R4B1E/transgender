@@ -1,7 +1,5 @@
-// import { RouteOptions } from '@fastify/websocket';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import Ajv from 'ajv'
-// import { FastifyRequest } from 'fastify/types/request';
 import { WebSocket } from 'ws';
 
 const ajv = new Ajv();

@@ -132,12 +132,10 @@ function Realtime(
       if (set.size === 0) {
         channelHandlers.delete(channel);
         subscribed.delete(channel);
-        send({ event: "unsubscribe", channel });
       }
     } else {
       channelHandlers.delete(channel);
       subscribed.delete(channel);
-      send({ event: "unsubscribe", channel });
     }
   }
 

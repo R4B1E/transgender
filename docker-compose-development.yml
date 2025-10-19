@@ -11,6 +11,8 @@ services:
     networks:
       - localnet
     restart: always
+    volumes:
+      - ./Matchmaking/src:/usr/app/src
   gameplay:
     container_name: gameplay
     build:
@@ -23,6 +25,8 @@ services:
     networks:
       - localnet
     restart: always
+    volumes:
+      - ./Gameplay/src:/usr/app/src
   realtime:
     container_name: realtime
     build:
@@ -33,5 +37,7 @@ services:
     networks:
       - localnet
     restart: always
+    volumes:
+      - ./Realtime/src:/usr/app/src
 networks:
   localnet:
