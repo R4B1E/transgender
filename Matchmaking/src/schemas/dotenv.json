@@ -13,5 +13,6 @@
             "type": "integer"
         }
     },
-    "required": ["PORT", "REALTIME_PORT"]
+    "required": ["PORT", "REALTIME_PORT"],
+    "additionalProperties": "false"
 }

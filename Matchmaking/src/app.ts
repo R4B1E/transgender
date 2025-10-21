@@ -14,10 +14,7 @@ async function main() {
     },
   })
 
-  fastify.register(AutoLoad, {
-    dir: join(__dirname, 'schemas'),
-    indexPattern: /^loader.js$/i
-  })
+  await fastify.register(require('./loader'));
 
   await fastify.register(require('./configs/config'))
   fastify.log.info('Config loaded %o', fastify.config)
@@ -27,6 +24,10 @@ async function main() {
   await fastify.register(AutoLoad, {
     dir: join(__dirname, 'plugins'),
     ignorePattern: /prisma-data-source\.(ts|js)$/i,
+  })
+
+  fastify.register(AutoLoad, {
+    dir: join(__dirname, 'routes')
   })
 
   fastify.register(AutoLoad, {

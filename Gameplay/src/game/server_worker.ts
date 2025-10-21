@@ -2,7 +2,6 @@ import { workerData, parentPort } from "worker_threads";
 import PongGame from "./physics/pong_game";
 import { MovePaddle } from "./physics/move_paddle";
 import Realtime from "../realtime-client/app";
-import { match } from "assert";
 
 const GAME_TICKER_MS = 1_000 / 60;
 
@@ -21,7 +20,7 @@ let tickInterval : NodeJS.Timeout | null;
 
 function killWorkerThread(winner: string){
     parentPort?.postMessage({
-        gameWinner: winner
+        gameWinner: winner,
     });
     for (const f in playerChannels)
         realtime.unsubscribe(playerChannels.get(f) as string);
@@ -47,11 +46,12 @@ function startGameDataTicker(screen_width : number, screen_height : number) {
             }
             else if (player_won == 2) {
                 player_2_score += 1;
-                if (player_2_score == 10)
+                if (player_2_score == 5)
                     killWorkerThread(players[1]);
                 game = new PongGame(screen_width, screen_height);
             }
             else {
+                console.log('publishing game state ');
                 realtime.publish(matchId + "-game:state", {
                     paddle_1_position,
                     paddle_2_position,
@@ -64,10 +64,10 @@ function startGameDataTicker(screen_width : number, screen_height : number) {
     }, GAME_TICKER_MS)
 }
 
-function subscribeToPlayerInput(channelInstance: string, playerId: string, player1: boolean) {
+function subscribeToPlayerInput(channelInstance: string, playerId: string, player1: string) {
     realtime.subscribe(channelInstance, async (msg: any /* to be replaced */) => {
         const move = /* MovePaddle[msg.keyPressed as keyof typeof MovePaddle] */msg.keyPressed;
-        if (player1)
+        if (player1 === "true")
             player_1_move = move;
         else
             player_2_move = move;
@@ -88,7 +88,7 @@ realtime.onConnection(async () => {
             playerChannels.set(playerId, playerId + "pos");
             game = new PongGame(screen_width, screen_height);
             // delay by one RTT ~ estimated to be 1sec
-            realtime.publish(`${match}-ready`, {delay: 6000}, true);
+            realtime.publish(`${matchId}-ready`, {delay: 6000}, true);
             setTimeout(() => {
                 startGameDataTicker(screen_width, screen_height);
                 subscribeToPlayerInput(playerChannels.get(playerId)!, playerId, amIHost);    
@@ -96,6 +96,6 @@ realtime.onConnection(async () => {
         }
     })
     realtime.publish(`${matchId}-thread:ready`, {
-        start: true,
+        start: true
     }, true);
 })

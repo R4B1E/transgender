@@ -1,12 +1,15 @@
 import { type FastifyInstance, type FastifyPluginAsync } from "fastify"
 import Realtime from "../Realtime/app"
+import { Prisma } from "../../generated/prisma"
 
 interface matchObject{
+    createdAt: number,
     id: string,
     round: number,
     slotA: string,
     slotB: string,
     winner: string
+    duration?: number
 }
 
 interface gameObject{
@@ -22,11 +25,12 @@ function makeNextRound(matches : matchObject[], round : number) : matchObject[] 
   const next : matchObject[] = [];
   for (let i = 0; i < winners.length; i += 2) {
     next.push({
-      id: genId('match'),
-      round,
-      slotA: winners[i],
-      slotB: winners[i+1],
-      winner: '',
+        createdAt: Date.now(),
+        id: genId('match'),
+        round,
+        slotA: winners[i],
+        slotB: winners[i+1],
+        winner: '',
     });
   }
   return next;
@@ -38,18 +42,18 @@ function genId(prefix='id') : string{
 
 // bracket helper: produce list of matches for a list of players (1v1)
 function seedBracket(players : Array<string>, fastify: FastifyInstance, gameId: number) : matchObject[]{
-  // players: array of { id, skill, ... } length 8
   // simple seeding: random shuffle then pair [0 vs 1], [2 vs 3], ...
   const shuffled = players.slice().sort(() => Math.random() - 0.5);
   const matches : Array<matchObject> = new Array();
   for (let i = 0; i < shuffled.length; i += 2) {
     // Maybe i need to add room entry to the database after the game finishes ??                                            
     matches.push({
-      id: genId('match'),
-      round: 1,
-      slotA: shuffled[i],
-      slotB: shuffled[i+1],
-      winner: ''
+        createdAt: Date.now(),
+        id: genId('match'),
+        round: 1,
+        slotA: shuffled[i],
+        slotB: shuffled[i+1],
+        winner: ''
     });
   }
   return matches; // quarterfinal matches
@@ -58,7 +62,7 @@ function seedBracket(players : Array<string>, fastify: FastifyInstance, gameId: 
 // TO.DO : the players map might have Player prisma object as its value
 const Matchmaking: FastifyPluginAsync = async function (fastify: FastifyInstance, opts) {
     const realtime = Realtime('ws://realtime:' + fastify.config.REALTIME_PORT.toString(), { reconnect: true });
-    let games : Map< string, Map<number, gameObject> > = new Map([["tournament", new Map()], ["1v1", new Map()]]);
+    let games : Map< string, Map<string, gameObject> > = new Map([["tournament", new Map()], ["1v1", new Map()]]);
 
     let defaultGames : Array<string> = [];
 
@@ -101,10 +105,13 @@ const Matchmaking: FastifyPluginAsync = async function (fastify: FastifyInstance
             fastify.log.info(`array of players : ${g?.players}`)
 
             if (g?.players.length === gameSize){
+                // add the game to the database
                 fastify.log.info(`room full`);
                 const qfMatches : matchObject[] = seedBracket(g.players, fastify, gameId); // round 1
+                await fastify.game.create(gameId, {mode: gameMode});
                 g.rounds.set(1, qfMatches);
                 g.currentRound = 1;
+                realtime.publish(`${gameId}-nextRound`, {matches: qfMatches}, true);
 
                 for (const m of qfMatches){
                     const payload = {
@@ -114,6 +121,8 @@ const Matchmaking: FastifyPluginAsync = async function (fastify: FastifyInstance
                         players: [m.slotA, m.slotB],
                         createdAt: Date.now()
                     }
+                    const players = [m.slotA, m.slotB].map(p => ({id : p})) as Prisma.PlayerCreateInput[];
+                    await fastify.room.create({matchId: m.id, gameId, players, round: m.round});
                     realtime.publish(`${m.slotA}-matchmaking`, payload, true);
                     realtime.publish(`${m.slotB}-matchmaking`, payload, true);
                     fastify.log.info(`Published match assign ${m.id} for game ${gameId}`);
@@ -144,19 +153,25 @@ const Matchmaking: FastifyPluginAsync = async function (fastify: FastifyInstance
 
             const winner = (match.slotA === winnerId) ? match.slotA : match.slotB;
             match.winner = winner;
+            const duration = Date.now() - match.createdAt;
+            await fastify.room.update(matchId, {duration, gameWinner: match.winner});
 
             const roundDone = currentMatches.every(m => m.winner.length > 0);
             if (roundDone) {
-                const winners = currentMatches.map(m => m.winner.length > 0);
+                const winners = currentMatches.map(m => m.winner);
                 if (winners.length === 1){
                     const champion = winners[0];
-                    realtime.publish('game:complete', {gameId, champion, finishedAt: Date.now()}, true);
+                    realtime.publish(`${gameId}-game:complete`, {champion}, true);
+                    fastify.log.info(`published to room ${gameId}-game:complete`);
+                    await fastify.game.update(gameId, {gameWinner: champion});
                     fastify.log.info(`Game ${gameId} complete! winner: ${champion}`);
+                    games.get(mode)?.delete(gameId);
                     return;
                 }
 
                 const nextRoundNum = g.currentRound + 1;
                 const nextMatches : matchObject[] = makeNextRound(currentMatches, nextRoundNum);
+                realtime.publish(`${matchId}-nextRound`, {matches: nextMatches}, true);
                 g.rounds.set(nextRoundNum, nextMatches);
                 g.currentRound = nextRoundNum;
 
@@ -168,6 +183,8 @@ const Matchmaking: FastifyPluginAsync = async function (fastify: FastifyInstance
                         players: [m.slotA, m.slotB] ,
                         createdAt: Date.now() 
                     }
+                    const players = [m.slotA, m.slotB].map(p => ({id : p})) as Prisma.PlayerCreateManyInput[];
+                    await fastify.room.create({matchId: m.id, gameId, players, round: m.round});
                     realtime.publish(`${m.slotA}-matchmaking`, payload, true);
                     realtime.publish(`${m.slotB}-matchmaking`, payload, true);
                     fastify.log.info(`Published match assign ${m.id} for game ${gameId}`);

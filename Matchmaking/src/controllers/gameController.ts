@@ -1,32 +1,72 @@
-import type { Game, PrismaClient } from "../../generated/prisma";
+import type { Game, PrismaClient, Room } from "../../generated/prisma";
 
 const gameController = async function(prisma :  PrismaClient) : Promise<gameType> {
     return{
-        create: async (body : CreateBody) => {
+        create: async (id: string, body : CreateBody) => {
             const {mode} = body;
             const game = await prisma.game.create({
                 data: {
-                    type : mode,
+                    id,
+                    type : mode
                 }
             })
             return game;
         },
-        update: async (_id : number, body : UpdateBody) =>{
-            const { time/*, gameWinner*/ } = body;
+        update: async (_id : string, body : UpdateBody) =>{
+            console.log(`updating game with id ${_id}`)
+            const { gameWinner } = body;
+            console.log(`${gameWinner} is the winner !`);
             const updatedGame = await prisma.game.update({
                 where: {id: _id},
                 data : {
-                    endedAt: time,
-                    // winner: gameWinner
+                    Winner: gameWinner
                 }
             })
             return updatedGame;
         },
-        delete: async (_id : number) => {
+        delete: async (_id : string) => {
             const deletedGame = await prisma.game.delete({
                 where: {id: _id}
             })
             return deletedGame;
+        },
+        get: async (gameId: string | null, playerId: string | null, includeRooms: boolean) => {
+            let Games : Game[] = [];
+            if (gameId != null)
+            {
+                const g = await prisma.game.findFirstOrThrow({
+                    where: {
+                        id: gameId}, include: {
+                            rooms: {
+                                include: {
+                                    players: {
+                                        include : {
+                                            player: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                Games.push(g);
+            }
+            else if(playerId != null) {
+                Games = await prisma.game.findMany({
+                    where : {
+                        players: {
+                            some: {
+                                playerId
+                            }
+                        }
+                    },
+                    include : {
+                        rooms: includeRooms
+                    }
+                })
+                if (Games.length === 0)
+                    throw Error();
+            }
+            return Games;
         }
     }
 }
@@ -34,10 +74,13 @@ const gameController = async function(prisma :  PrismaClient) : Promise<gameType
 export default gameController
 
 type CreateBody = { mode: string };
-type UpdateBody = { time: Date; gameWinner: string };
+type UpdateBody = { gameWinner: string };
+
+export type gameWithRoom = Game & {rooms: Room[]};
 
 export type gameType = {
-  create(body: CreateBody): Promise<Game>;
-  update(id: number, body: UpdateBody): Promise<Game>;
-  delete(id: number): Promise<Game>;
+  create(gameId: string, body: CreateBody): Promise<Game>;
+  update(id: string, body: UpdateBody): Promise<Game>;
+  delete(id: string): Promise<Game>;
+  get(gameId: string | null, playerId: string | null, includeRooms: boolean) : Promise<Game[] | gameWithRoom[]>;
 };

@@ -12,33 +12,48 @@ datasource db {
 }
 
 model Game {
-  id           Int       @id @default(autoincrement())
-  createdAt    DateTime  @default(now())
-  endedAt      DateTime?
-  rooms        Room[]            
-  type         String
-  Winner        String?
+  id        String          @id
+  createdAt DateTime        @default(now())
+  type      String
+  Winner    String?
+  rooms     Room[]
+  players   PlayerOnGame[]
 }
 
 model Room {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  endedAt   DateTime?
-  players   Player[]
-  game      Game     @relation(fields: [gameId], references: [id])
-  gameId    Int
+  id        String          @id
+  createdAt DateTime        @default(now())
+  duration  Float?
+  round     Int?
   Winner    String?
-  Host      String?
+  
+  game      Game            @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameId    String
+  players   PlayerOnRoom[]
 }
 
 model Player {
-  id        String      @id
-  room      Room     @relation(fields: [roomId], references: [id])
-  roomId    Int
-  // add other fields (name, score, etc.) as needed
+  id        String          @id
+  name      String?
+
+  games     PlayerOnGame[]
+  rooms     PlayerOnRoom[]
 }
 
-// enum Mode {
-//   TOURNAMENT
-//   MULTIPLAYER
-// }
+model PlayerOnGame {
+  player     Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId   String
+  game       Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameId     String
+
+  @@id([playerId, gameId])
+}
+
+model PlayerOnRoom {
+  player     Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId   String
+  room       Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId     String
+
+  @@id([playerId, roomId])
+}

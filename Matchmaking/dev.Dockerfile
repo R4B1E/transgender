@@ -8,4 +8,8 @@ RUN npm install
 
 COPY . ./
 
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
+
 CMD ["npm", "run", "dev"]
