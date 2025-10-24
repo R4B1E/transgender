@@ -7,18 +7,16 @@ import { MovePaddle } from "./move_paddle"
 type MixedList = (number | PaddlePosition | BallPosition)[];
 
 export default class PongGame {
-    screen_width : number
-    screen_height : number
+    screen_width : number = 1920
+    screen_height : number = 1080
     ball : Ball
     paddle1 : Paddle
     paddle2 : Paddle
-    constructor(screen_width : number, screen_height : number)
+    constructor()
     {
-        this.screen_width = screen_width;
-        this.screen_height = screen_height;
-        this.ball = new Ball(screen_width, screen_height)
-        this.paddle1 = new Paddle(screen_width, screen_height, true);
-        this.paddle2 = new Paddle(screen_width, screen_height, false);
+        this.ball = new Ball(this.screen_width, this.screen_height)
+        this.paddle1 = new Paddle(this.screen_width, this.screen_height, true);
+        this.paddle2 = new Paddle(this.screen_width, this.screen_height, false);
     }
     update(player_1_move: MovePaddle, player_2_move: MovePaddle) : MixedList
     {
@@ -43,5 +41,9 @@ export default class PongGame {
         if (ball_position.x > this.screen_width)
             return 1;
         return 0;
+    }
+    getStats()
+    {
+        return [this.paddle1.get_position(), this.paddle2.get_position(), this.ball.get_position()];
     }
 }

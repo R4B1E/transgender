@@ -11,7 +11,7 @@ export default class Paddle {
     {
         this.screen_width = screen__width;
         this.screen_height = screen_height;
-        this.width = 20;
+        this.width = 30;
         this.height = 2 * screen_height / 10;
         this.top = 4 * screen_height / 10;
         
@@ -21,12 +21,10 @@ export default class Paddle {
             this.x = this.screen_width - this.width - 10;
     }
     move_up() : void{
-        if (this.top > 0)
-            this.top -= 10;
+        this.top = Math.max(0, this.top - 20);
     }
     move_down() : void{
-        if (this.top < this.screen_height - this.height)
-            this.top += 10;
+        this.top = Math.min(this.screen_height - this.height, this.top + 20);
     }
     get_position() : PaddlePosition{
         return new PaddlePosition(this.x, this.top, this.width, this.height);

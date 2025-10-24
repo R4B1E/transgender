@@ -1,7 +1,7 @@
 filename := docker-compose.yml
 
 build:
-	docker compose -f ${filename} up
+	docker compose -f ${filename} up --build
 
 restart:
 	docker compose -f ${filename} restart

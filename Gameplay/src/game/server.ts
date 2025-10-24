@@ -3,16 +3,10 @@ import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import Realtime from "../realtime-client/app";
 import path from "path";
 
-interface GameRoom {
-    gameOn: boolean,
-    roomName: string
-}
-
 function generateNewGameThread(
     matchId : string,
     gameId : string,
     players : [string],
-    activeGameRooms: Map<string, GameRoom>,
     config: any,
     realtime: any,
     mode: string
@@ -35,20 +29,14 @@ function generateNewGameThread(
             console.log(`WORKER EXITED DUE TO AN ERROR ${error.message}`);
         });
         worker.on("message", (msg) => {
-            if (msg.roomName ) {
-                activeGameRooms.set(msg.roomName, {
-                    roomName: msg.roomName,
-                    gameOn: msg.gameOn,
-                })
-            } else if (msg.gameWinner) {
-                activeGameRooms.delete(msg.roomName);
-                const payload = {
+            if (msg.gameWinner && msg.payload) {
+                const payload = { ... msg.payload,
                     gameWinner: msg.gameWinner,
                     gameId: gameId,
                     matchId: matchId,
                     mode: mode
                 }
-                realtime.publish('match:result', payload, true);
+                realtime.publish(`${matchId}-match:result`, payload, true);
             }
         });
         worker.on("exit", (code) => {
@@ -62,22 +50,19 @@ function generateNewGameThread(
 
 
 const PongServerPlugin: FastifyPluginAsync = async function (fastify: FastifyInstance) {
-    let activeGameRooms: Map<string, GameRoom> = new Map();
     let realtime = Realtime('ws://realtime:' + fastify.config.REALTIME_PORT.toString(), {reconnect: true});
     realtime.onConnection(async () => {
         realtime.subscribe('PongGame', (message : any) => {
             const {matchId, gameId, players, gameMode} = message;
             console.log('new player joined the game')
-            if (!activeGameRooms.has(matchId))
-                generateNewGameThread(
-                    matchId,
-                    gameId,
-                    players,
-                    activeGameRooms,
-                    fastify.config,
-                    realtime,
-                    gameMode
-                );
+            generateNewGameThread(
+                matchId,
+                gameId,
+                players,
+                fastify.config,
+                realtime,
+                gameMode
+            );
         })
     })
     /* fastify.addHook('onClose', () => {

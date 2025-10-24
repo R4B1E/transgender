@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import Ajv from 'ajv'
 import { WebSocket } from 'ws';
+import { send } from 'process';
 
 const ajv = new Ajv();
 type EventType = 'subscribe' | 'unsubscribe' | 'publish';
@@ -12,6 +13,8 @@ interface PubMessage { channel: string, data: PubData }
 interface Pub_Sub_event { event: EventType; channel: string; data?: PubData, excludeSelf?: boolean }
 
 type Channel = Map<string, Set<WebSocket>>;
+
+let socketToPlayerId : Map<WebSocket, string> = new Map();
 
 const topics: Channel = new Map();
 
@@ -50,6 +53,26 @@ const messageSchema = {
 };
 
 function cleanupSocket(socket: WebSocket) {
+
+    const playerId = socketToPlayerId.get(socket);
+    const channel = `${playerId}-disconnect`;
+    const clients = topics.get(channel);
+
+    if (clients){
+        for (let client of Array.from(clients.values())) {
+            if (client.readyState !== WebSocket.OPEN) {
+                clients.delete(client);
+                subscriptionsBySocket.get(client)?.delete(channel);
+                continue;
+            }
+
+            const payload = {
+                msg: 'd'
+            }
+
+            sendMsg(client, { channel, data: payload });
+        }
+    }
     console.log('client disconnected')
     const channels = subscriptionsBySocket.get(socket);
     if (channels) {
@@ -87,7 +110,15 @@ const FastifyRoutes: FastifyPluginAsync = async function (fastify: FastifyInstan
                 socket.send("pong");
                 return;
             }
+
             const msg = safeParse(text);
+
+            // map socket to sessionId in order to send disconnection event to subscribers
+            if (msg && "sessionId" in msg){
+                socketToPlayerId.set(socket, msg.sessionId as string);
+                return;
+            }
+
             if (!validate(msg))
                 return sendMsg(socket, { channel: "Error", data: 'Invalid Message Structure.' })
 

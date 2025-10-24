@@ -13,9 +13,7 @@ const gameController = async function(prisma :  PrismaClient) : Promise<gameType
             return game;
         },
         update: async (_id : string, body : UpdateBody) =>{
-            console.log(`updating game with id ${_id}`)
             const { gameWinner } = body;
-            console.log(`${gameWinner} is the winner !`);
             const updatedGame = await prisma.game.update({
                 where: {id: _id},
                 data : {

@@ -11,11 +11,12 @@ export default class Ball{
     max_angle: number
     x: number
     y: number
-    r: number = 20
     ball_velocity_module: number
     dx: number
     dy: number
+    l: number
     dv: number
+    // add starting velocity
     constructor(screen_width: number, screen_height: number) {
         this.screen_width = screen_width;
         this.screen_height = screen_height;
@@ -23,15 +24,21 @@ export default class Ball{
         this.x = screen_width / 2
         this.y = screen_height / 2
         this.ball_velocity_module = 5
-        this.dx = Math.round(Math.random() * (this.ball_velocity_module - this.ball_velocity_module / 2) + this.ball_velocity_module / 2);
-        this.dy = Math.sqrt(this.ball_velocity_module ** 2 - this.dx ** 2);
+        this.l = 30;
+        let random_dX = Math.random() * (this.ball_velocity_module - this.ball_velocity_module / 2) /* + this.ball_velocity_module / 2 */;
+        // add direction randomness
+        this.dx = random_dX * Math.sign(Math.random() * 2 - 1);
+        // define angle
+        let random_dY = Math.sqrt(this.ball_velocity_module ** 2 - this.dx ** 2);
+        this.dy = random_dY * Math.sign(Math.random() * 2 - 1);
+        console.log(this.dx, random_dY);
         this.dv = 0.1
     }
     get_position() : BallPosition
     {
         return new BallPosition(this.x, this.y);
     }
-    is_paddle_colliding(paddle_pos: PaddlePosition) : boolean
+    is_paddle_colliding(paddle_pos: PaddlePosition, isPlayer1: 1 | 0) : boolean
     {
         if ((paddle_pos.top < this.y) && (this.y < paddle_pos.top + paddle_pos.height))
         {
@@ -41,13 +48,13 @@ export default class Ball{
         return false
     }
     update(paddle_1_pos: PaddlePosition, paddle_2_pos: PaddlePosition) : BallPosition{
-        this.x += this.dx
+        this.x += this.dx // this.x = Math.min(this.x + this.dx, paddle2_pos);
         this.y += this.dy
-        if (this.y < 0 || this.y > this.screen_height)
+        if (this.y < 0 || this.y + this.l > this.screen_height)
             this.dy = -this.dy
-        if (this.is_paddle_colliding(paddle_1_pos))
+        if (this.is_paddle_colliding(paddle_1_pos, 0))
             this._calculate_paddle_hit(paddle_1_pos)
-        if (this.is_paddle_colliding(paddle_2_pos))
+        if (this.is_paddle_colliding(paddle_2_pos, 1))
         {
             this._calculate_paddle_hit(paddle_2_pos)
             this.dx = -this.dx

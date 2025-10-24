@@ -11,9 +11,9 @@ export default class Rectangle{
         this.height = height;
         this.color = color;
     }
-    move(y : number, height: number){
+    move(y : number, x: number | null = null){
         this.y = y;
-        this.height = height;
+        this.x = x ?? this.x;
     }
     draw(ctx: CanvasRenderingContext2D){
         ctx.fillStyle = this.color;

@@ -45,6 +45,7 @@ function Realtime(serverUrl: string, options?: { reconnect?: boolean; reconnectM
             subscribed.forEach(ch => {
                 send({ event: "subscribe", channel: ch });
             });
+            ws?.send(JSON.stringify({sessionId: localStorage.getItem('myid')}));
             startHeartbeat();
         });
 
