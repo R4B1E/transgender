@@ -82,7 +82,6 @@ async function bracketUI(message: any){
 }
 
 async function matchCompleteHandler(message: any){
-    console.log(`received ${JSON.stringify(message)}`)
     canvas.drawWinner(message);
 }
 
@@ -94,7 +93,6 @@ async function gameStateHandler(message: any) {
         player_1_score,
         player_2_score
     } = message;
-    console.log(`paddle1_position : ${paddle_1_position}, paddle2_position : ${paddle_2_position}, ball_position : ${ball_position}, player1_score : ${player_1_score}, player2_score : ${player_2_score}`);
     canvas.draw(paddle_1_position, paddle_2_position, ball_position, player_1_score, player_2_score);
 }
 
@@ -106,7 +104,6 @@ let clientId: string | null = localStorage.getItem("myid");
 let realtime = Realtime('ws://localhost:7777');
 
 realtime.onConnection(() => {
-    console.log(`my id is ${clientId}`);
     realtime.publish("game:join", { playerId: clientId, gameMode });
     State = "onQueue";
     myReq = window.requestAnimationFrame(onQueue);
@@ -146,7 +143,6 @@ realtime.onConnection(() => {
             if (message.playerId === clientId)
             {
                 let intervalValue = setInterval(()=> {
-                    console.log(gameStartCd);
                     if (gameStartCd === 0)
                         clearInterval(intervalValue);
                     else
@@ -155,7 +151,6 @@ realtime.onConnection(() => {
                 setTimeout(()=> cancelAnimationFrame(myReq), 5_000);
             }
             // starting game in [delay]
-            console.log(`${matchId}-game:state`)
             realtime.subscribe(`${matchId}-game:state`, gameStateHandler);
             realtime.subscribe(`${gameId}-game:complete`, gameCompleteHandler);
             realtime.subscribe(`${matchId}-match:result`, matchCompleteHandler);

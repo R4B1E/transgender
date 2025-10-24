@@ -63,9 +63,10 @@ export default class Canvas {
         this.ctx.fillStyle = `rgb(${colorInt[0]} ${colorInt[1]} ${colorInt[2]} / 100%)`;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        this.ball.move(ball_position.y * this.factorY, ball_position.x * this.factorX);
-        this.paddle1.move(paddle1_position.top * this.factorY);
-        this.paddle2.move(paddle2_position.top * this.factorY);
+        this.ball.move(ball_position.y * this.factorY,null, ball_position.x * this.factorX);
+        this.paddle1.move(paddle1_position.top * this.factorY, paddle1_position.height * this.factorY);
+        this.paddle2.move(paddle2_position.top * this.factorY, paddle2_position.height * this.factorY);
+        console.log(this.paddle1.y, this.height);
         
         drawDAshedLine(this.ctx, this.width, this.height, "#1E526D");
         this.ball.draw(this.ctx);
@@ -90,9 +91,9 @@ export default class Canvas {
         this.ctx.fillStyle = `rgb(${colorInt[0]} ${colorInt[1]} ${colorInt[2]} / 100%)`;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        this.ball.move(ball_position.y * this.factorY, ball_position.x * this.factorX);
-        this.paddle1.move(paddle_1_position.top * this.factorY);
-        this.paddle2.move(paddle_2_position.top * this.factorY);
+        this.ball.move(ball_position.y * this.factorY, null, ball_position.x * this.factorX);
+        this.paddle1.move(paddle_1_position.top * this.factorY, paddle_1_position.height * this.factorY);
+        this.paddle2.move(paddle_2_position.top * this.factorY, paddle_2_position.height * this.factorY);
         
         this.paddle1.draw(this.ctx);
         this.paddle2.draw(this.ctx);

@@ -20,18 +20,16 @@ export default class Ball{
     constructor(screen_width: number, screen_height: number) {
         this.screen_width = screen_width;
         this.screen_height = screen_height;
-        this.max_angle = 60
+        this.max_angle = 30
         this.x = screen_width / 2
         this.y = screen_height / 2
         this.ball_velocity_module = 5
         this.l = 30;
-        let random_dX = Math.random() * (this.ball_velocity_module - this.ball_velocity_module / 2) /* + this.ball_velocity_module / 2 */;
-        // add direction randomness
-        this.dx = random_dX * Math.sign(Math.random() * 2 - 1);
-        // define angle
-        let random_dY = Math.sqrt(this.ball_velocity_module ** 2 - this.dx ** 2);
-        this.dy = random_dY * Math.sign(Math.random() * 2 - 1);
-        console.log(this.dx, random_dY);
+        let angle = (Math.random() * 2 - 1) * this.max_angle;
+        let speed = this.ball_velocity_module / 2;
+        
+        this.dx = speed * Math.cos(toRadians(angle));
+        this.dy = speed * Math.sin(toRadians(angle));
         this.dv = 0.1
     }
     get_position() : BallPosition
@@ -43,7 +41,10 @@ export default class Ball{
         if ((paddle_pos.top < this.y) && (this.y < paddle_pos.top + paddle_pos.height))
         {
             if ((paddle_pos.x < this.x) && (paddle_pos.x + paddle_pos.width > this.x))
+            {
+                this.x = isPlayer1 === 1 ? paddle_pos.x + paddle_pos.width : paddle_pos.x - this.l;
                 return true
+            }
         }
         return false
     }
@@ -52,9 +53,9 @@ export default class Ball{
         this.y += this.dy
         if (this.y < 0 || this.y + this.l > this.screen_height)
             this.dy = -this.dy
-        if (this.is_paddle_colliding(paddle_1_pos, 0))
+        if (this.is_paddle_colliding(paddle_1_pos, 1))
             this._calculate_paddle_hit(paddle_1_pos)
-        if (this.is_paddle_colliding(paddle_2_pos, 1))
+        if (this.is_paddle_colliding(paddle_2_pos, 0))
         {
             this._calculate_paddle_hit(paddle_2_pos)
             this.dx = -this.dx

@@ -66,7 +66,6 @@ function startGameDataTicker() {
                         player_1_score,
                         player_2_score
                     }
-                    console.log(`${matchId}-game:state`)
                     realtime.publish(matchId + "-game:state", payload, true);
                     break;
                 }
